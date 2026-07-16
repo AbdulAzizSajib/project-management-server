@@ -1,0 +1,16 @@
+model WorkspaceMember {
+  id        String        @id @default(cuid())
+  role      WorkspaceRole @default(MEMBER)
+  message   String?       @db.Text
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@map("workspace_member")
+}

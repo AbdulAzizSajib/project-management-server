@@ -1,0 +1,25 @@
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?       @db.Text
+  status      ProjectStatus @default(PLANNING)
+  priority    Priority      @default(MEDIUM)
+  progress    Int           @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  teamLeadId String?
+  teamLead   User?   @relation("ProjectTeamLead", fields: [teamLeadId], references: [id])
+
+  members ProjectMember[]
+  tasks   Task[]
+
+  @@index([workspaceId])
+  @@index([teamLeadId])
+  @@map("project")
+}

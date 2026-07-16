@@ -1,0 +1,14 @@
+node_modules
+.pnpm-store
+.env
+.env.*
+!.env.example
+
+ca.pem
+dist
+dist.zip
+*.zip
+
+/src/generated
+
+.vercel
