@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workspace Invitation</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f3f5f7;
+        color: #20262d;
+      }
+      .container {
+        max-width: 640px;
+        margin: 24px auto;
+        background: #ffffff;
+        border: 1px solid #e7ecf1;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(20, 32, 50, 0.08);
+      }
+      .header {
+        background: linear-gradient(135deg, #0f766e, #0e9f6e);
+        color: #ffffff;
+        padding: 28px 32px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.3;
+      }
+      .content {
+        padding: 28px 32px;
+        line-height: 1.7;
+        font-size: 15px;
+      }
+      .meta {
+        margin: 18px 0;
+        padding: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+      }
+      .button-wrap {
+        margin: 26px 0;
+        text-align: center;
+      }
+      .button {
+        display: inline-block;
+        background: #0f766e;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 12px 22px;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+      .small {
+        color: #5c6a79;
+        font-size: 13px;
+        margin-top: 18px;
+        word-break: break-all;
+      }
+      .footer {
+        border-top: 1px solid #edf2f7;
+        padding: 16px 32px;
+        font-size: 12px;
+        color: #718096;
+        background: #fafcfe;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>You're invited to join a workspace</h1>
+      </div>
+
+      <div class="content">
+        <p>Hello,</p>
+        <p>
+          <strong><%= inviterName %></strong> invited you to join the workspace
+          <strong><%= workspaceName %></strong>.
+        </p>
+
+        <div class="meta">
+          <div>Role: <strong><%= role %></strong></div>
+          <div>
+            Expires: <strong><%= new Date(expiresAt).toUTCString() %></strong>
+          </div>
+        </div>
+
+        <div class="button-wrap">
+          <a class="button" href="<%= invitationUrl %>">Accept Invitation</a>
+        </div>
+
+        <p class="small">
+          If the button doesn't work, open this link manually:
+        </p>
+        <p class="small"><%= invitationUrl %></p>
+      </div>
+
+      <div class="footer">
+        This is an automated email. If you were not expecting this invitation,
+        you can ignore it.
+      </div>
+    </div>
+  </body>
+</html>
