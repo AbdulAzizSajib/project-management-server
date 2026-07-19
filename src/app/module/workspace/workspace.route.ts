@@ -3,6 +3,11 @@ import { WorkspaceController } from "./workspace.controller";
 import { checkAuth } from "../../middleware/checkAuth";
 import { Role } from "../../../generated/prisma/client";
 import { multerUpload } from "../../config/multer.config";
+import { validateRequest } from "../../middleware/validateRequest";
+import {
+  createWorkspaceZodSchema,
+  updateWorkspaceZodSchema,
+} from "./workspace.validation";
 
 const WorkspaceRouter = Router();
 
@@ -10,7 +15,16 @@ WorkspaceRouter.post(
   "/",
   checkAuth(Role.USER, Role.ADMIN),
   multerUpload.single("image"),
+  validateRequest(createWorkspaceZodSchema),
   WorkspaceController.createWorkspace,
+);
+
+WorkspaceRouter.patch(
+  "/:workspaceId",
+  checkAuth(Role.USER, Role.ADMIN),
+  multerUpload.single("image"),
+  validateRequest(updateWorkspaceZodSchema),
+  WorkspaceController.updateWorkspace,
 );
 
 WorkspaceRouter.delete(
@@ -19,9 +33,10 @@ WorkspaceRouter.delete(
   WorkspaceController.deleteWorkspace,
 );
 
+// Shudhu system admin ra shob workspace dekhbe (normal user na)
 WorkspaceRouter.get(
   "/",
-  checkAuth(Role.USER, Role.ADMIN),
+  checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
   WorkspaceController.getAllWorkspaces,
 );
 
@@ -35,6 +50,6 @@ export default WorkspaceRouter;
 
 // POST   /workspaces
 // GET    /workspaces
-// GET    /workspaces/:id
-// PATCH  /workspaces/:id ----------> Baki
-// DELETE /workspaces/:id
+// GET    /workspaces/my-workspaces
+// PATCH  /workspaces/:workspaceId
+// DELETE /workspaces/:workspaceId

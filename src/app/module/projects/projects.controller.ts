@@ -7,7 +7,7 @@ import {
   CreateProjectPayload,
   UpdateProjectPayload,
 } from "./projects.interface";
-import { ProjectMemberRole } from "../../../generated/prisma/browser";
+import { ProjectMemberRole } from "../../../generated/prisma/client";
 
 const createProject = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as CreateProjectPayload;
@@ -86,14 +86,14 @@ const deleteProject = catchAsync(async (req: Request, res: Response) => {
 });
 
 const addProjectMember = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { projectId } = req.params;
   const { memberId, role } = req.body;
 
   const projectMember = await ProjectService.addProjectMember(
-    id as string,
+    projectId as string,
     req.user.userId,
     memberId as string,
-    role as ProjectMemberRole,
+    (role as ProjectMemberRole) ?? ProjectMemberRole.MEMBER,
   );
 
   sendResponse(res, {
@@ -104,6 +104,38 @@ const addProjectMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getProjectMembers = catchAsync(async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+
+  const members = await ProjectService.getProjectMembers(
+    projectId as string,
+    req.user.userId,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Project members retrieved successfully",
+    data: members,
+  });
+});
+
+const removeProjectMember = catchAsync(async (req: Request, res: Response) => {
+  const { projectId, userId } = req.params;
+
+  await ProjectService.removeProjectMember(
+    projectId as string,
+    req.user.userId,
+    userId as string,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Project member removed successfully",
+  });
+});
+
 export const ProjectController = {
   createProject,
   getProjects,
@@ -111,4 +143,6 @@ export const ProjectController = {
   updateProject,
   deleteProject,
   addProjectMember,
+  getProjectMembers,
+  removeProjectMember,
 };

@@ -15,9 +15,32 @@ model Task {
   assigneeId String?
   assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
 
-  comments Comment[]
+  creatorId String
+  creator   User   @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  comments   Comment[]
+  activities TaskActivity[]
 
   @@index([projectId])
   @@index([assigneeId])
+  @@index([creatorId])
   @@map("task")
+}
+
+model TaskActivity {
+  id        String   @id @default(cuid())
+  action    String
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_activity")
 }

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b3e9a2c1-4f7d-4a2e-9c1b-8f2a6d5e7c10",
     "name": "Project Management API",
-    "description": "Auth endpoints for the Project Management backend (Express + better-auth + Prisma/MySQL).\n\nBase URL variable: `{{baseUrl}}` (default http://localhost:5000).\n\nMost cookies (accessToken, refreshToken, better-auth.session_token) are set httpOnly by the server and stored automatically in Postman's cookie jar per domain, so protected requests just work after login. The `accessToken`/`refreshToken` are also captured into collection variables where returned in the body.",
+    "description": "Full API for the Project Management backend (Express 5 + better-auth + Prisma/MySQL).\n\nBase URL variable: `{{baseUrl}}` (default http://localhost:5000). All routes are under `/api/v1`.\n\nAuth: log in first — cookies (accessToken, refreshToken, better-auth.session_token) are httpOnly and stored in Postman's cookie jar automatically, so protected requests just work.\n\nFolders: Auth, Workspace, Workspace Members, Projects, Project Members, Tasks, Comments, Dashboard, Notifications, Invitations. Replace `:id`/`:workspaceId`/`:projectId`/`:taskId` path segments with real ids or set the matching collection variables (many are captured automatically by the create requests).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -28,15 +28,27 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"123456\",\n    \"contactNumber\": \"01700000000\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
             },
             "description": "Register a new user. Email must be verified via OTP before tokens are issued."
           }
@@ -59,15 +71,27 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"{{userEmail}}\",\n    \"otp\": \"1234\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/verify-email",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "verify-email"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "verify-email"
+              ]
             },
             "description": "Verify email with the 4-digit OTP sent on registration. Returns access + refresh tokens."
           }
@@ -90,17 +114,29 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"identifier\": \"john@example.com\",\n    \"password\": \"123456\"\n}"
+              "raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"123456\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
             },
-            "description": "Login with email OR phone number (`identifier`) and password. Sets httpOnly cookies and returns tokens."
+            "description": "Login with email and password. Sets httpOnly cookies and returns tokens."
           }
         },
         {
@@ -110,8 +146,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
             },
             "description": "Get the currently authenticated user's profile. Requires the accessToken + session cookies set by login."
           }
@@ -137,8 +180,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/refresh-token",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "refresh-token"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh-token"
+              ]
             },
             "description": "Issue new access/refresh tokens using the refreshToken + session cookies."
           }
@@ -147,15 +197,27 @@
           "name": "Change Password",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"currentPassword\": \"123456\",\n    \"newPassword\": \"1234567\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/change-password",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "change-password"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "change-password"
+              ]
             },
             "description": "Change the password for the logged-in user. Requires auth cookies."
           }
@@ -164,15 +226,27 @@
           "name": "Resend Verification OTP",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"john@example.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/resend-verification-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "resend-verification-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "resend-verification-otp"
+              ]
             },
             "description": "Resend the email-verification OTP."
           }
@@ -181,15 +255,27 @@
           "name": "Resend Password Reset OTP",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"john@example.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/resend-password-reset-otp",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "resend-password-reset-otp"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "resend-password-reset-otp"
+              ]
             },
             "description": "Resend the password-reset OTP (email must already be verified)."
           }
@@ -198,15 +284,27 @@
           "name": "Forget Password",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"john@example.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/forget-password",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "forget-password"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "forget-password"
+              ]
             },
             "description": "Send a password-reset OTP to the user's email."
           }
@@ -215,15 +313,27 @@
           "name": "Reset Password",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"john@example.com\",\n    \"otp\": \"1234\",\n    \"newPassword\": \"newpass123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/reset-password",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "reset-password"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "reset-password"
+              ]
             },
             "description": "Reset the password using the OTP from forget-password."
           }
@@ -235,8 +345,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
             },
             "description": "Log out the current user and clear auth cookies."
           }
@@ -248,9 +365,22 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/login/google?redirect=/dashboard",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login", "google"],
-              "query": [{ "key": "redirect", "value": "/dashboard" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login",
+                "google"
+              ],
+              "query": [
+                {
+                  "key": "redirect",
+                  "value": "/dashboard"
+                }
+              ]
             },
             "description": "Starts the Google OAuth flow. Open this in a browser (redirect-based) — not testable purely in Postman."
           }
@@ -263,6 +393,47 @@
       "item": [
         {
           "name": "Create Workspace",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "My Workspace",
+                  "type": "text"
+                },
+                {
+                  "key": "slug",
+                  "value": "my-workspace",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "My first workspace",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "Create a workspace (multipart/form-data). Owner is auto-added as an ADMIN member. `image` is optional."
+          },
           "event": [
             {
               "listen": "test",
@@ -275,55 +446,93 @@
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Update Workspace",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":workspaceId"
+              ]
+            },
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
                   "key": "name",
-                  "value": "Engineering Workspace",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "Workspace for engineering team projects",
+                  "value": "Updated Workspace",
                   "type": "text"
                 },
                 {
                   "key": "slug",
-                  "value": "engineering-workspace",
+                  "value": "updated-workspace",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Updated description",
                   "type": "text"
                 },
                 {
                   "key": "image",
                   "type": "file",
-                  "src": ""
+                  "src": []
                 }
               ]
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/workspaces",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "workspaces"]
-            },
-            "description": "Create a workspace. Requires logged-in user. Saves returned id into {{workspaceId}}."
-          }
+            "description": "Update workspace (owner or admin only). Replacing image deletes the old Cloudinary asset."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "Get All Workspaces",
+          "name": "Get All Workspaces (admin only)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/workspaces",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "workspaces"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces"
+              ]
             },
-            "description": "Get all workspaces (authorized roles only)."
-          }
+            "description": "System ADMIN / SUPER_ADMIN only. Normal USER gets 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('ok', () => pm.expect([200,403]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get My Workspaces",
@@ -332,11 +541,29 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/workspaces/my-workspaces",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "workspaces", "my-workspaces"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                "my-workspaces"
+              ]
             },
-            "description": "Get current user's workspaces."
-          }
+            "description": "Workspaces the user owns OR is a member of."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Delete Workspace",
@@ -344,15 +571,32 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "workspaces", "{{workspaceId}}"]
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":workspaceId"
+              ]
             },
-            "description": "Delete a workspace by id."
-          }
+            "description": "Owner only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
-      ],
-      "description": "Workspace management endpoints."
+      ]
     },
     {
       "name": "Workspace Members",
@@ -363,45 +607,1147 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/members",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "workspaces", "{{workspaceId}}", "members"]
-            },
-            "description": "Get all members of a workspace."
-          }
-        },
-        {
-          "name": "Add Workspace Member",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"role\": \"MEMBER\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/members/{{memberUserId}}",
-              "host": ["{{baseUrl}}"],
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
               "path": [
                 "api",
                 "v1",
                 "workspaces",
-                "{{workspaceId}}",
-                "members",
-                "{{memberUserId}}"
+                ":workspaceId",
+                "members"
               ]
             },
-            "description": "Add a user to workspace by user id and role."
-          }
+            "description": "Any workspace member can view. Path param: workspaceId."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Workspace Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":workspaceId",
+                "members"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"{{memberUserId}}\",\n    \"role\": \"MEMBER\"\n}"
+            },
+            "description": "Owner/admin only. role = ADMIN | MEMBER (default MEMBER)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Member Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId/members/:userId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":workspaceId",
+                "members",
+                ":userId"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"role\": \"ADMIN\"\n}"
+            },
+            "description": "Owner/admin only. Non-owner admins cannot modify another admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Workspace Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId/members/:userId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":workspaceId",
+                "members",
+                ":userId"
+              ]
+            },
+            "description": "Owner/admin only. Owner cannot be removed; non-owner admin cannot remove another admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
-      ],
-      "description": "Workspace member endpoints."
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Website Redesign\",\n    \"description\": \"Redesign the marketing site\",\n    \"status\": \"PLANNING\",\n    \"priority\": \"HIGH\",\n    \"startDate\": \"2026-07-20T00:00:00.000Z\",\n    \"endDate\": \"2026-08-30T00:00:00.000Z\",\n    \"workspaceId\": \"{{workspaceId}}\",\n    \"teamLeadId\": null\n}"
+            },
+            "description": "Creator must be a workspace member. teamLead (defaults to creator) is auto-added as LEAD project member. status/priority/progress optional."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('projectId', json.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Projects",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects"
+              ]
+            },
+            "description": "All projects across workspaces the user is a member of."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Project By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":id"
+              ]
+            },
+            "description": "Path param id = projectId. Requires workspace membership."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Website Redesign v2\",\n    \"status\": \"ACTIVE\",\n    \"priority\": \"URGENT\",\n    \"teamLeadId\": \"{{memberUserId}}\"\n}"
+            },
+            "description": "Owner/admin only. Changing teamLeadId syncs project_member (new LEAD added, old lead demoted to MEMBER). progress is NOT settable here (auto-computed from tasks)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":id"
+              ]
+            },
+            "description": "Owner/admin only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Project Members",
+      "item": [
+        {
+          "name": "Add Project Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:projectId/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":projectId",
+                "members"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"memberId\": \"{{memberUserId}}\",\n    \"role\": \"MEMBER\"\n}"
+            },
+            "description": "Owner/admin only. PHASE 6 rule: member must already be a workspace member. role = LEAD | MEMBER."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Project Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:projectId/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":projectId",
+                "members"
+              ]
+            },
+            "description": "Any workspace member can view."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Project Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:projectId/members/:userId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":projectId",
+                "members",
+                ":userId"
+              ]
+            },
+            "description": "Owner/admin only. Team lead cannot be removed (change lead first)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:projectId/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":projectId",
+                "tasks"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Implement Authentication\",\n    \"description\": \"Create login and registration system\",\n    \"type\": \"FEATURE\",\n    \"priority\": \"HIGH\",\n    \"status\": \"TODO\",\n    \"assigneeId\": null,\n    \"dueDate\": \"2026-07-25T00:00:00.000Z\"\n}"
+            },
+            "description": "Requester must be a workspace member. assignee (if set) must be a project member. Creator is recorded. Logs a CREATED activity."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('taskId', json.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Project Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:projectId/tasks?status=TODO&type=FEATURE&priority=HIGH&assigneeId={{memberUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":projectId",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "TODO",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "FEATURE",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "HIGH",
+                  "disabled": true
+                },
+                {
+                  "key": "assigneeId",
+                  "value": "{{memberUserId}}",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Optional filters via query params."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":id"
+              ]
+            },
+            "description": "Includes creator, assignee, comments and last 20 activities."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Implement Auth v2\",\n    \"priority\": \"URGENT\",\n    \"type\": \"TASK\",\n    \"assigneeId\": \"{{memberUserId}}\",\n    \"dueDate\": \"2026-07-28T00:00:00.000Z\"\n}"
+            },
+            "description": "Edit task fields. Reassigning notifies the new assignee and logs an activity. Send dueDate:null to clear it. Status is NOT changed here (use Update Status)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "description": "Allowed: TODO->IN_PROGRESS->IN_REVIEW->DONE, plus IN_PROGRESS->TODO and IN_REVIEW->IN_PROGRESS. Recomputes project progress + logs STATUS_CHANGED."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:id/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":id",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"assigneeId\": \"{{memberUserId}}\"\n}"
+            },
+            "description": "Assign (or send null to unassign). Assignee must be a project member. Notifies the assignee."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task Activities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:id/activities",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":id",
+                "activities"
+              ]
+            },
+            "description": "Task history: CREATED, ASSIGNED/UNASSIGNED, STATUS_CHANGED, PRIORITY_CHANGED, TYPE_CHANGED, TITLE_CHANGED."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":id"
+              ]
+            },
+            "description": "Recomputes project progress after deletion."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:taskId/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":taskId",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"content\": \"I fixed the bug. Please review.\"\n}"
+            },
+            "description": "Any workspace member can comment. Notifies the task assignee."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json?.data?.id) pm.collectionVariables.set('commentId', json.data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/:taskId/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                ":taskId",
+                "comments"
+              ]
+            },
+            "description": "All comments on a task (oldest first)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/comments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "comments",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"content\": \"Updated: looks good, approved.\"\n}"
+            },
+            "description": "Comment owner only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/comments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "comments",
+                ":id"
+              ]
+            },
+            "description": "Comment owner OR workspace owner/admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Workspace Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces/:workspaceId/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":workspaceId",
+                "dashboard"
+              ]
+            },
+            "description": "Totals: projects (total/active/completed), members, projects-by-status. Member only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Project Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/projects/:projectId/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "projects",
+                ":projectId",
+                "dashboard"
+              ]
+            },
+            "description": "Task counts (total/completed/inProgress/inReview/pending/overdue), members, progress (auto). Member only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications?unread=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "unread",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "My notifications + unread count. ?unread=true for unread only."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "if (json?.data?.notifications.0.id) pm.collectionVariables.set('notificationId', json.data.notifications.0.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark All As Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "read-all"
+              ]
+            },
+            "description": "Mark all my notifications read."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark As Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/:id/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                ":id",
+                "read"
+              ]
+            },
+            "description": "Mark one notification read (owner only)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                ":id"
+              ]
+            },
+            "description": "Delete one notification (owner only)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Invitations",
       "item": [
         {
           "name": "Create Invitation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workspaces/:id/invitations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workspaces",
+                ":id",
+                "invitations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{inviteeEmail}}\",\n    \"role\": \"MEMBER\"\n}"
+            },
+            "description": "Workspace admin only. Email is normalized to lowercase. Sends an invite email."
+          },
           "event": [
             {
               "listen": "test",
@@ -411,31 +1757,12 @@
                   "pm.test('status is 201', () => pm.response.to.have.status(201));",
                   "const json = pm.response.json();",
                   "if (json?.data?.id) pm.collectionVariables.set('invitationId', json.data.id);",
+                  "const json = pm.response.json();",
                   "if (json?.data?.token) pm.collectionVariables.set('invitationToken', json.data.token);"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"{{inviteeEmail}}\",\n    \"role\": \"MEMBER\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/workspaces/{{workspaceId}}/invitations",
-              "host": ["{{baseUrl}}"],
-              "path": [
-                "api",
-                "v1",
-                "workspaces",
-                "{{workspaceId}}",
-                "invitations"
-              ]
-            },
-            "description": "Create an invitation for a user email in a workspace. Requires authenticated workspace ADMIN."
-          }
+          ]
         },
         {
           "name": "Get My Invitations",
@@ -444,28 +1771,69 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v1/invitations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "invitations"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitations"
+              ]
             },
-            "description": "Get invitations where current user is inviter or invitee email recipient."
-          }
+            "description": "Invitations I sent OR received (by my email)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Accept Invitation",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invitations/:id/accept",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitations",
+                ":id",
+                "accept"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"token\": \"{{invitationToken}}\"\n}"
+              "raw": "{\n    \"token\": \"{{invitationToken}}\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/invitations/{{invitationId}}/accept",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "invitations", "{{invitationId}}", "accept"]
-            },
-            "description": "Accept invitation with invitation id + token for logged-in invited user."
-          }
+            "description": "Accepting user's email must match. Adds workspace membership + notifies inviter."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Reject Invitation",
@@ -473,12 +1841,31 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/invitations/{{invitationId}}/reject",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "invitations", "{{invitationId}}", "reject"]
+              "raw": "{{baseUrl}}/api/v1/invitations/:id/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitations",
+                ":id",
+                "reject"
+              ]
             },
-            "description": "Reject a pending invitation for the logged-in invited user."
-          }
+            "description": "Invited user rejects a pending invitation."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Delete Invitation",
@@ -486,15 +1873,32 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/v1/invitations/{{invitationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "invitations", "{{invitationId}}"]
+              "raw": "{{baseUrl}}/api/v1/invitations/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "invitations",
+                ":id"
+              ]
             },
-            "description": "Delete an invitation (inviter or workspace admin only)."
-          }
+            "description": "Inviter or workspace admin. Accepted invitations cannot be deleted."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
-      ],
-      "description": "Invitation management endpoints."
+      ]
     },
     {
       "name": "Health Check",
@@ -503,22 +1907,73 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/",
-          "host": ["{{baseUrl}}"],
-          "path": [""]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            ""
+          ]
         },
-        "description": "Basic API health check."
+        "description": "Server root health check."
       }
     }
   ],
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000" },
-    { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" },
-    { "key": "userEmail", "value": "" },
-    { "key": "workspaceId", "value": "" },
-    { "key": "memberUserId", "value": "" },
-    { "key": "invitationId", "value": "" },
-    { "key": "invitationToken", "value": "" },
-    { "key": "inviteeEmail", "value": "invitee@example.com" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "userEmail",
+      "value": ""
+    },
+    {
+      "key": "workspaceId",
+      "value": ""
+    },
+    {
+      "key": "memberUserId",
+      "value": ""
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invitationId",
+      "value": ""
+    },
+    {
+      "key": "invitationToken",
+      "value": ""
+    },
+    {
+      "key": "inviteeEmail",
+      "value": "invitee@example.com"
+    }
   ]
 }

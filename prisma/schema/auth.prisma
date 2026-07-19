@@ -24,7 +24,10 @@ model User {
   ledProjects       Project[]         @relation("ProjectTeamLead")
   projectMembers    ProjectMember[]
   assignedTasks     Task[]            @relation("TaskAssignee")
+  createdTasks      Task[]            @relation("TaskCreator")
   comments          Comment[]
+  notifications     Notification[]
+  taskActivities    TaskActivity[]
 
   @@index([role])
   @@map("user")

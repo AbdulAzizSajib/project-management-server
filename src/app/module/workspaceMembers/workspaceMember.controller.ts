@@ -9,6 +9,7 @@ const getWorkspaceMembers = catchAsync(async (req: Request, res: Response) => {
   const { workspaceId } = req.params;
   const workspaceMembers = await WorkspaceMemberService.getWorkspaceMembers(
     workspaceId as string,
+    req.user.userId,
   );
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -19,12 +20,13 @@ const getWorkspaceMembers = catchAsync(async (req: Request, res: Response) => {
 });
 
 const addWorkspaceMember = catchAsync(async (req: Request, res: Response) => {
-  const { workspaceId, userId } = req.params;
-  const { role } = req.body;
+  const { workspaceId } = req.params;
+  const { userId, role } = req.body;
   const newMember = await WorkspaceMemberService.addWorkspaceMember(
     workspaceId as string,
+    req.user.userId,
     userId as string,
-    role as WorkspaceRole,
+    (role as WorkspaceRole) ?? WorkspaceRole.MEMBER,
   );
   sendResponse(res, {
     httpStatusCode: status.CREATED,
@@ -34,7 +36,42 @@ const addWorkspaceMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateWorkspaceMemberRole = catchAsync(
+  async (req: Request, res: Response) => {
+    const { workspaceId, userId } = req.params;
+    const { role } = req.body;
+    const updated = await WorkspaceMemberService.updateWorkspaceMemberRole(
+      workspaceId as string,
+      req.user.userId,
+      userId as string,
+      role as WorkspaceRole,
+    );
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Workspace member role updated successfully",
+      data: updated,
+    });
+  },
+);
+
+const removeWorkspaceMember = catchAsync(async (req: Request, res: Response) => {
+  const { workspaceId, userId } = req.params;
+  await WorkspaceMemberService.removeWorkspaceMember(
+    workspaceId as string,
+    req.user.userId,
+    userId as string,
+  );
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Workspace member removed successfully",
+  });
+});
+
 export const WorkspaceMemberController = {
   getWorkspaceMembers,
   addWorkspaceMember,
+  updateWorkspaceMemberRole,
+  removeWorkspaceMember,
 };

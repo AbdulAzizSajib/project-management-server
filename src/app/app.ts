@@ -51,7 +51,7 @@ app.use("/api/v1", IndexRoutes);
 app.get('/', async (req: Request, res: Response) => {
     res.status(201).json({
         success: true,
-        message: 'API is working',
+        message: 'project management system api is working',
     })
 });
 

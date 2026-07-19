@@ -107,15 +107,10 @@ export const checkAuth =
                 );
             }
 
-            if (
-                authRoles.length > 0 &&
-                !authRoles.includes(verifiedToken.data!.role as Role)
-            ) {
-                throw new AppError(
-                    status.FORBIDDEN,
-                    "Forbidden access! You do not have permission to access this resource.",
-                );
-            }
+            // NOTE: Role authorization ekhon DB session user (line ~76) theke hocche —
+            // seta always fresh. JWT er role static/stale hote pare (login er por role
+            // change hole), tai JWT diye role recheck kora holo na — shudhu token er
+            // validity (signature/expiry) verify kora holo.
 
             next();
         } catch (error: any) {

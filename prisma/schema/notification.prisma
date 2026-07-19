@@ -1,0 +1,16 @@
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  message   String           @db.Text
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  // Optional link data so frontend notification click kore relevant page e jete pare
+  entityId  String?
+  createdAt DateTime         @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notification")
+}

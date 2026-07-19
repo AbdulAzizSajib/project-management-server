@@ -5,3 +5,10 @@ export interface IcreateWorkspacePayload {
     ownerId: string;
     image?: string;
 }
+
+export interface IUpdateWorkspacePayload {
+    name?: string;
+    description?: string | null;
+    slug?: string;
+    image?: string;
+}

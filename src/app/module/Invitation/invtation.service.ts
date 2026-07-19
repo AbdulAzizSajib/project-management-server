@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import status from "http-status";
+import { NotificationType } from "../../../generated/prisma/client";
 import {
   InvitationStatus,
   WorkspaceRole,
@@ -7,6 +8,7 @@ import {
 import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
+import { NotificationService } from "../notification/notification.service";
 import { sendEmail } from "../../utils/email";
 
 const assertWorkspaceAdmin = async (workspaceId: string, userId: string) => {
@@ -36,6 +38,9 @@ const createInvitation = async (
   email: string,
   role: WorkspaceRole,
 ) => {
+  // Email normalize kora — case-insensitive dedup ar consistent storage
+  const normalizedEmail = email.trim().toLowerCase();
+
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: { id: true, name: true },
@@ -50,7 +55,7 @@ const createInvitation = async (
   const existingPendingInvitation = await prisma.invitation.findFirst({
     where: {
       workspaceId,
-      email,
+      email: normalizedEmail,
       status: InvitationStatus.PENDING,
     },
   });
@@ -68,7 +73,7 @@ const createInvitation = async (
   const invitation = await prisma.invitation.create({
     data: {
       workspaceId,
-      email,
+      email: normalizedEmail,
       role,
       token,
       expiresAt,
@@ -93,7 +98,7 @@ const createInvitation = async (
   const invitationUrl = `${envVars.FRONTEND_URL}/invitations/accept?token=${invitation.token}&invitationId=${invitation.id}`;
 
   await sendEmail({
-    to: email,
+    to: normalizedEmail,
     subject: `Invitation to join ${invitation.workspace.name}`,
     templateName: "invitation",
     templateData: {
@@ -217,6 +222,17 @@ const acceptInvitation = async (
       alreadyMember: Boolean(existingMembership),
     };
   });
+
+  // Inviter ke notify kora je invitation accept hoyeche
+  if (invitation.inviterId !== userId) {
+    await NotificationService.createNotification({
+      userId: invitation.inviterId,
+      title: "Invitation accepted",
+      message: `${userEmail} accepted your invitation to "${result.invitation.workspace.name}"`,
+      type: NotificationType.INVITATION_ACCEPTED,
+      entityId: invitation.workspaceId,
+    });
+  }
 
   return result;
 };

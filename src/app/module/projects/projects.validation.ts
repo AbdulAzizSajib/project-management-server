@@ -1,5 +1,19 @@
 import z from "zod";
-import { ProjectStatus, Priority } from "../../../generated/prisma/client";
+import {
+  ProjectStatus,
+  Priority,
+  ProjectMemberRole,
+} from "../../../generated/prisma/client";
+
+export const addProjectMemberZodSchema = z.object({
+  memberId: z
+    .string("Member ID is required")
+    .min(1, "Member ID is required"),
+  role: z
+    .enum(ProjectMemberRole, { message: "Invalid project member role" })
+    .optional()
+    .default(ProjectMemberRole.MEMBER),
+});
 
 export const createProjectZodSchema = z.object({
   name: z
@@ -12,15 +26,11 @@ export const createProjectZodSchema = z.object({
     .optional()
     .nullable(),
   status: z
-    .enum(Object.values(ProjectStatus) as [string, ...string[]], {
-      errorMap: () => ({ message: "Invalid project status" }),
-    })
+    .enum(ProjectStatus, { message: "Invalid project status" })
     .optional()
     .default(ProjectStatus.PLANNING),
   priority: z
-    .enum(Object.values(Priority) as [string, ...string[]], {
-      errorMap: () => ({ message: "Invalid project priority" }),
-    })
+    .enum(Priority, { message: "Invalid project priority" })
     .optional()
     .default(Priority.MEDIUM),
   progress: z
@@ -50,21 +60,12 @@ export const updateProjectZodSchema = z.object({
     .optional()
     .nullable(),
   status: z
-    .enum(Object.values(ProjectStatus) as [string, ...string[]], {
-      errorMap: () => ({ message: "Invalid project status" }),
-    })
+    .enum(ProjectStatus, { message: "Invalid project status" })
     .optional(),
   priority: z
-    .enum(Object.values(Priority) as [string, ...string[]], {
-      errorMap: () => ({ message: "Invalid project priority" }),
-    })
+    .enum(Priority, { message: "Invalid project priority" })
     .optional(),
-  progress: z
-    .number("Progress must be a number")
-    .int("Progress must be an integer")
-    .min(0, "Progress must be between 0 and 100")
-    .max(100, "Progress must be between 0 and 100")
-    .optional(),
+  // progress manually update kora jabe na (PHASE 9) — task status theke auto hoy
   startDate: z.string().datetime().optional().nullable(),
   endDate: z.string().datetime().optional().nullable(),
   teamLeadId: z.string("Team lead ID must be string").optional().nullable(),

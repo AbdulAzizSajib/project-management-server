@@ -48,10 +48,48 @@ const createWorkspace = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateWorkspace = catchAsync(async (req: Request, res: Response) => {
+  const { workspaceId } = req.params;
+  const userId = req.user.userId;
+  const { name, description, slug } = req.body;
+
+  // Jodi notun image file pathano hoy, cloudinary te upload kore URL nei
+  let image: string | undefined;
+  if (req.file) {
+    const uploadResult = await uploadFileToCloudinary(
+      req.file.buffer,
+      req.file.originalname,
+    );
+    image = uploadResult.secure_url;
+  }
+
+  let workspace;
+  try {
+    workspace = await WorkspaceService.updateWorkspace(
+      workspaceId as string,
+      userId,
+      { name, description, slug, image },
+    );
+  } catch (error) {
+    // Update fail korle notun upload kora image-ta orphan na thake
+    if (image) {
+      await deleteFileFromCloudinary(image);
+    }
+    throw error;
+  }
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Workspace updated successfully",
+    data: workspace,
+  });
+});
+
 const deleteWorkspace = catchAsync(async (req: Request, res: Response) => {
   const { workspaceId } = req.params;
 
-  await WorkspaceService.deleteWorkspace(workspaceId as string);
+  await WorkspaceService.deleteWorkspace(workspaceId as string, req.user.userId);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -83,6 +121,7 @@ const getMyWorkspaces = catchAsync(async (req: Request, res: Response) => {
 
 export const WorkspaceController = {
   createWorkspace,
+  updateWorkspace,
   deleteWorkspace,
   getAllWorkspaces,
   getMyWorkspaces,

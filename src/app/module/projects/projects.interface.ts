@@ -17,7 +17,6 @@ export interface UpdateProjectPayload {
   description?: string | null;
   status?: ProjectStatus;
   priority?: Priority;
-  progress?: number;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   teamLeadId?: string | null;
