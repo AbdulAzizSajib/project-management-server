@@ -7,6 +7,7 @@ import {
   CreateProjectPayload,
   UpdateProjectPayload,
 } from "./projects.interface";
+import { ProjectMemberRole } from "../../../generated/prisma/browser";
 
 const createProject = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body as CreateProjectPayload;
@@ -84,10 +85,30 @@ const deleteProject = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addProjectMember = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { memberId, role } = req.body;
+
+  const projectMember = await ProjectService.addProjectMember(
+    id as string,
+    req.user.userId,
+    memberId as string,
+    role as ProjectMemberRole,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.CREATED,
+    success: true,
+    message: "Project member added successfully",
+    data: projectMember,
+  });
+});
+
 export const ProjectController = {
   createProject,
   getProjects,
   getProjectById,
   updateProject,
   deleteProject,
+  addProjectMember,
 };

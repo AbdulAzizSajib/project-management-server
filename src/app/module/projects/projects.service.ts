@@ -1,5 +1,9 @@
 import status from "http-status";
-import { ProjectStatus, Priority } from "../../../generated/prisma/client";
+import {
+  ProjectStatus,
+  Priority,
+  ProjectMemberRole,
+} from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import {
@@ -334,10 +338,42 @@ const deleteProject = async (projectId: string, userId: string) => {
   return deletedProject;
 };
 
+const addProjectMember = async (
+  projectId: string,
+  userId: string,
+  memberId: string,
+  role: ProjectMemberRole,
+) => {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: {
+      id: true,
+      workspaceId: true,
+    },
+  });
+
+  if (!project) {
+    throw new AppError(status.NOT_FOUND, "Project not found");
+  }
+
+  await assertWorkspaceMember(project.workspaceId, userId);
+
+  const projectMember = await prisma.projectMember.create({
+    data: {
+      userId: memberId,
+      projectId: projectId,
+      role: role,
+    },
+  });
+
+  return projectMember;
+};
+
 export const ProjectService = {
   createProject,
   getProjects,
   getProjectById,
   updateProject,
   deleteProject,
+  addProjectMember,
 };

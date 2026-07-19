@@ -1,6 +1,7 @@
 model ProjectMember {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id        String            @id @default(cuid())
+  role      ProjectMemberRole @default(MEMBER)
+  createdAt DateTime          @default(now())
 
   userId    String
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)

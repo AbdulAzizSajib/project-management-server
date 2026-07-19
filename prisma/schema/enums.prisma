@@ -4,6 +4,11 @@ enum Role {
   USER
 }
 
+enum ProjectMemberRole {
+  LEAD
+  MEMBER
+}
+
 enum UserStatus {
   ACTIVE
   BLOCKED
