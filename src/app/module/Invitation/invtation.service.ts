@@ -113,6 +113,59 @@ const createInvitation = async (
   return invitation;
 };
 
+// Public (auth chara) — email er link e click korle account nei/logged out
+// user ke ei invitation ta valid kina + kon workspace/email seta janate hoy.
+// Token diye khuji (invitationId noy) — token unguessable, tai eta secure.
+const getInvitationByToken = async (token: string) => {
+  const invitation = await prisma.invitation.findUnique({
+    where: { token },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      status: true,
+      expiresAt: true,
+      workspace: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      inviter: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (!invitation) {
+    throw new AppError(status.NOT_FOUND, "Invitation not found");
+  }
+
+  const isExpired = invitation.expiresAt < new Date();
+
+  // Ei email diye already account ache kina — frontend decide korbe
+  // register e pathabe naki login e.
+  const existingUser = await prisma.user.findUnique({
+    where: { email: invitation.email },
+    select: { id: true },
+  });
+
+  return {
+    id: invitation.id,
+    email: invitation.email,
+    role: invitation.role,
+    status: invitation.status,
+    expiresAt: invitation.expiresAt,
+    isExpired,
+    workspace: invitation.workspace,
+    inviterName: invitation.inviter.name,
+    hasAccount: Boolean(existingUser),
+  };
+};
+
 const getInvitations = async (userId: string, userEmail: string) => {
   const invitations = await prisma.invitation.findMany({
     where: {
@@ -310,6 +363,7 @@ const deleteInvitation = async (invitationId: string, userId: string) => {
 
 export const InvitationService = {
   createInvitation,
+  getInvitationByToken,
   getInvitations,
   acceptInvitation,
   rejectInvitation,

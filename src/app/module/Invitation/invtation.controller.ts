@@ -23,6 +23,23 @@ const createInvitation = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getInvitationByToken = catchAsync(async (req: Request, res: Response) => {
+  const token = req.query?.token as string;
+
+  if (!token) {
+    throw new AppError(status.BAD_REQUEST, "Invitation token is required");
+  }
+
+  const invitation = await InvitationService.getInvitationByToken(token);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Invitation details retrieved successfully",
+    data: invitation,
+  });
+});
+
 const getInvitations = catchAsync(async (req: Request, res: Response) => {
   const invitations = await InvitationService.getInvitations(
     req.user.userId,
@@ -94,6 +111,7 @@ const deleteInvitation = catchAsync(async (req: Request, res: Response) => {
 
 export const InvitationController = {
   createInvitation,
+  getInvitationByToken,
   getInvitations,
   acceptInvitation,
   rejectInvitation,

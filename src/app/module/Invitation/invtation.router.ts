@@ -13,6 +13,13 @@ InvitationRouter.post(
   InvitationController.createInvitation,
 );
 
+// Public — auth lage na. Email link e click korle account nei/logged out
+// user o invitation details (workspace name, email, account ache kina) dekhte pare.
+InvitationRouter.get(
+  "/invitations/details",
+  InvitationController.getInvitationByToken,
+);
+
 InvitationRouter.get(
   "/invitations",
   checkAuth(...ALL_ROLES),
