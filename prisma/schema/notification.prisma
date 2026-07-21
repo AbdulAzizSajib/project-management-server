@@ -1,5 +1,5 @@
 model Notification {
-  id        String           @id @default(cuid())
+  id        String           @id @default(cuid(2))
   title     String
   message   String           @db.Text
   type      NotificationType

@@ -47,14 +47,29 @@ const logActivity = async (input: {
  *   TODO -> IN_PROGRESS -> IN_REVIEW -> DONE
  * Allowed backward moves:
  *   IN_PROGRESS -> TODO
- *   IN_REVIEW  -> IN_PROGRESS
+ *   IN_REVIEW  -> IN_PROGRESS   (reject / send back)
+ *   DONE       -> IN_PROGRESS   (reopen)
  */
 const ALLOWED_STATUS_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
   [TaskStatus.TODO]: [TaskStatus.IN_PROGRESS],
   [TaskStatus.IN_PROGRESS]: [TaskStatus.TODO, TaskStatus.IN_REVIEW],
   [TaskStatus.IN_REVIEW]: [TaskStatus.IN_PROGRESS, TaskStatus.DONE],
-  [TaskStatus.DONE]: [],
+  [TaskStatus.DONE]: [TaskStatus.IN_PROGRESS],
 };
+
+/**
+ * APPROVAL FLOW:
+ * Kichu transition shudhu "approver" (workspace owner / workspace ADMIN /
+ * project LEAD) korte parbe. Assignee kaj kore review porjonto nite pare,
+ * kintu approve/reject/reopen shudhu approver er kaj.
+ *
+ * key = `${from}->${to}`
+ */
+const APPROVER_ONLY_TRANSITIONS = new Set<string>([
+  `${TaskStatus.IN_REVIEW}->${TaskStatus.DONE}`, // approve
+  `${TaskStatus.IN_REVIEW}->${TaskStatus.IN_PROGRESS}`, // reject / send back
+  `${TaskStatus.DONE}->${TaskStatus.IN_PROGRESS}`, // reopen
+]);
 
 // PHASE 9: task status theke project er progress automatically hisab kore update kore
 // progress = (DONE task / total task) * 100
@@ -144,6 +159,40 @@ const getTaskWithAccess = async (taskId: string, userId: string) => {
   }
 
   return task;
+};
+
+// Requester ei task er "approver" kina resolve kore.
+// approver = workspace owner | workspace ADMIN | project LEAD
+const isTaskApprover = async (
+  projectId: string,
+  userId: string,
+): Promise<boolean> => {
+  const [project, projectMembership] = await Promise.all([
+    prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        workspace: {
+          select: {
+            ownerId: true,
+            members: {
+              where: { userId },
+              select: { role: true },
+            },
+          },
+        },
+      },
+    }),
+    prisma.projectMember.findUnique({
+      where: { userId_projectId: { userId, projectId } },
+      select: { role: true },
+    }),
+  ]);
+
+  const isWorkspaceOwner = project?.workspace.ownerId === userId;
+  const isWorkspaceAdmin = project?.workspace.members[0]?.role === "ADMIN";
+  const isProjectLead = projectMembership?.role === "LEAD";
+
+  return Boolean(isWorkspaceOwner || isWorkspaceAdmin || isProjectLead);
 };
 
 // assignee obosshoi project er member hote hobe
@@ -430,6 +479,31 @@ const updateTaskStatus = async (
     );
   }
 
+  // APPROVAL FLOW enforcement:
+  // approve/reject/reopen shudhu approver korte parbe.
+  const transitionKey = `${task.status}->${newStatus}`;
+  const requesterIsApprover = await isTaskApprover(task.projectId, requesterId);
+
+  if (APPROVER_ONLY_TRANSITIONS.has(transitionKey) && !requesterIsApprover) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Only a project lead or workspace admin can approve, reject, or reopen a task",
+    );
+  }
+
+  // assignee ase kina — thakle, forward move (review porjonto) shudhu
+  // assignee ba approver korte parbe. onno member ke atkano hobe.
+  if (
+    task.assigneeId &&
+    !requesterIsApprover &&
+    requesterId !== task.assigneeId
+  ) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Only the assignee or a project lead can change this task's status",
+    );
+  }
+
   const updated = await prisma.task.update({
     where: { id: taskId },
     data: { status: newStatus },
@@ -443,14 +517,62 @@ const updateTaskStatus = async (
   // status change howay project progress recompute
   await recomputeProjectProgress(task.projectId);
 
-  // Activity log: status change
+  // Activity log: approval flow er jonno clear action, baki gulo generic
+  const activityAction =
+    transitionKey === `${TaskStatus.IN_REVIEW}->${TaskStatus.DONE}`
+      ? "APPROVED"
+      : transitionKey === `${TaskStatus.IN_REVIEW}->${TaskStatus.IN_PROGRESS}`
+        ? "REJECTED"
+        : transitionKey === `${TaskStatus.DONE}->${TaskStatus.IN_PROGRESS}`
+          ? "REOPENED"
+          : transitionKey ===
+              `${TaskStatus.IN_PROGRESS}->${TaskStatus.IN_REVIEW}`
+            ? "SUBMITTED_FOR_REVIEW"
+            : "STATUS_CHANGED";
+
   await logActivity({
     taskId,
     userId: requesterId,
-    action: "STATUS_CHANGED",
+    action: activityAction,
     oldValue: task.status,
     newValue: newStatus,
   });
+
+  // NOTIFICATION: approval flow er participant der janano
+  // 1) assignee review er jonno submit korle -> approver der jonno kaj ache,
+  //    kintu assignee ke double-notify na kore, approve/reject holei assignee ke janai.
+  // 2) approve / reject / reopen holo -> assignee ke notify (nijer kora chara)
+  if (
+    APPROVER_ONLY_TRANSITIONS.has(transitionKey) &&
+    task.assigneeId &&
+    task.assigneeId !== requesterId
+  ) {
+    const notifyMap: Record<string, { title: string; message: string }> = {
+      [`${TaskStatus.IN_REVIEW}->${TaskStatus.DONE}`]: {
+        title: "Task approved",
+        message: `Your task "${updated.title}" was approved and marked as done`,
+      },
+      [`${TaskStatus.IN_REVIEW}->${TaskStatus.IN_PROGRESS}`]: {
+        title: "Task sent back",
+        message: `Your task "${updated.title}" needs more work and was sent back`,
+      },
+      [`${TaskStatus.DONE}->${TaskStatus.IN_PROGRESS}`]: {
+        title: "Task reopened",
+        message: `Your task "${updated.title}" was reopened`,
+      },
+    };
+
+    const notice = notifyMap[transitionKey];
+    if (notice) {
+      await NotificationService.createNotification({
+        userId: task.assigneeId,
+        title: notice.title,
+        message: notice.message,
+        type: NotificationType.TASK_ASSIGNED,
+        entityId: updated.id,
+      });
+    }
+  }
 
   return updated;
 };

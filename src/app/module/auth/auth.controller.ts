@@ -47,6 +47,16 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const updateProfile = catchAsync(async (req: Request, res: Response) => {
+    const result = await AuthService.updateProfile(req.user, req.body);
+    sendResponse(res, {
+        httpStatusCode: status.OK,
+        success: true,
+        message: "Profile updated successfully",
+        data: result,
+    });
+});
+
 const getNewToken = catchAsync(async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
     const betterAuthSessionToken = req.cookies["better-auth.session_token"];
@@ -261,6 +271,7 @@ export const AuthController = {
     registerUser,
     loginUser,
     getMe,
+    updateProfile,
     getNewToken,
     changePassword,
     logoutUser,

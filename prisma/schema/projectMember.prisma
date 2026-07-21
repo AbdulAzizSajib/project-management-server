@@ -1,5 +1,5 @@
 model ProjectMember {
-  id        String            @id @default(cuid())
+  id        String            @id @default(cuid(2))
   role      ProjectMemberRole @default(MEMBER)
   createdAt DateTime          @default(now())
 

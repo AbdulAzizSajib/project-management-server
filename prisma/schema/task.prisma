@@ -1,5 +1,5 @@
 model Task {
-  id          String     @id @default(cuid())
+  id          String     @id @default(cuid(2))
   title       String
   description String?    @db.Text
   status      TaskStatus @default(TODO)
@@ -28,7 +28,7 @@ model Task {
 }
 
 model TaskActivity {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid(2))
   action    String
   oldValue  String?
   newValue  String?

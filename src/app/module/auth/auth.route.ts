@@ -10,6 +10,7 @@ import {
     registerUserZodSchema,
     resendOtpZodSchema,
     resetPasswordZodSchema,
+    updateProfileZodSchema,
     verifyEmailZodSchema,
 } from "./auth.validation";
 
@@ -32,6 +33,12 @@ router.post(
     AuthController.loginUser,
 );
 router.get("/me", checkAuth(...ALL_ROLES), AuthController.getMe);
+router.patch(
+    "/me",
+    checkAuth(...ALL_ROLES),
+    validateRequest(updateProfileZodSchema),
+    AuthController.updateProfile,
+);
 router.post("/refresh-token", AuthController.getNewToken);
 router.post(
     "/change-password",

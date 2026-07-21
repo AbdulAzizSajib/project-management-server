@@ -12,6 +12,7 @@ import {
     IChangePasswordPayload,
     ILoginUserPayload,
     IRegisterUserPayload,
+    IUpdateProfilePayload,
 } from "./auth.interface";
 
 const buildTokenPayload = (user: {
@@ -115,6 +116,53 @@ const getMe = async (user: IRequestUser) => {
     }
 
     return isUserExists;
+};
+
+// Logged-in user nijer profile (name / contactNumber / image) update kore.
+const updateProfile = async (
+    user: IRequestUser,
+    payload: IUpdateProfilePayload,
+) => {
+    const existingUser = await prisma.user.findUnique({
+        where: { id: user.userId },
+    });
+
+    if (!existingUser) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    // contactNumber unique — onno karo sathe conflict korle atkao।
+    if (payload.contactNumber) {
+        const contactOwner = await prisma.user.findFirst({
+            where: {
+                contactNumber: payload.contactNumber,
+                NOT: { id: user.userId },
+            },
+            select: { id: true },
+        });
+
+        if (contactOwner) {
+            throw new AppError(
+                status.CONFLICT,
+                "This contact number is already in use",
+            );
+        }
+    }
+
+    const updated = await prisma.user.update({
+        where: { id: user.userId },
+        data: {
+            // undefined -> unchanged, null -> clear (contact/image), string -> set
+            name: payload.name?.trim(),
+            contactNumber:
+                payload.contactNumber === undefined
+                    ? undefined
+                    : payload.contactNumber,
+            image: payload.image === undefined ? undefined : payload.image,
+        },
+    });
+
+    return updated;
 };
 
 const getNewToken = async (refreshToken: string, rawSessionToken: string) => {
@@ -354,6 +402,7 @@ export const AuthService = {
     registerUser,
     loginUser,
     getMe,
+    updateProfile,
     getNewToken,
     changePassword,
     logoutUser,

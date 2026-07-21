@@ -1,5 +1,5 @@
 model WorkspaceMember {
-  id        String        @id @default(cuid())
+  id        String        @id @default(cuid(2))
   role      WorkspaceRole @default(MEMBER)
   message   String?       @db.Text
   createdAt DateTime      @default(now())

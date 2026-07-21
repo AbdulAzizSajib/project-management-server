@@ -2,6 +2,7 @@ import status from "http-status";
 import { NotificationType } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
+import { emitCommentNew } from "../../socket/socket";
 import { NotificationService } from "../notification/notification.service";
 
 // Task fetch kore ebong requester tar workspace er member kina check kore
@@ -57,16 +58,40 @@ const createComment = async (
     },
   });
 
-  // Task er assignee ke notify kora (nijer task e nijer comment chara)
-  if (task.assigneeId && task.assigneeId !== userId) {
-    await NotificationService.createNotification({
-      userId: task.assigneeId,
-      title: "New comment on your task",
-      message: `${comment.user.name} commented on "${task.title}"`,
-      type: NotificationType.TASK_COMMENTED,
-      entityId: task.id,
-    });
-  }
+  // Real-time: oi task khule bosa sob client er kache notun comment pathai
+  // (save howar por — tai comment id/createdAt/user sob ready)
+  emitCommentNew(taskId, comment);
+
+  // ---- Conversation-centric notification ----
+  // Age shudhu assignee ke notify hoto → tai B(assignee) reply korle A(creator)
+  // kichu janto na. Ekhon ei task er sathe jorito SOBAI ke notify kori:
+  //   - assignee
+  //   - creator
+  //   - age jara comment koreche (thread participant)
+  // (je ekhon comment korlo se bade, ar duplicate bade)
+  const pastCommenters = await prisma.comment.findMany({
+    where: { taskId },
+    select: { userId: true },
+    distinct: ["userId"],
+  });
+
+  const recipientIds = new Set<string>();
+  if (task.assigneeId) recipientIds.add(task.assigneeId);
+  if (task.creatorId) recipientIds.add(task.creatorId);
+  pastCommenters.forEach((c) => recipientIds.add(c.userId));
+  recipientIds.delete(userId); // nijer comment e nijeke notify kori na
+
+  await Promise.all(
+    [...recipientIds].map((recipientId) =>
+      NotificationService.createNotification({
+        userId: recipientId,
+        title: "New comment",
+        message: `${comment.user.name} commented on "${task.title}"`,
+        type: NotificationType.TASK_COMMENTED,
+        entityId: task.id,
+      }),
+    ),
+  );
 
   return comment;
 };

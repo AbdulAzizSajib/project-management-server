@@ -14,3 +14,9 @@ export interface IChangePasswordPayload {
     currentPassword: string;
     newPassword: string;
 }
+
+export interface IUpdateProfilePayload {
+    name?: string;
+    contactNumber?: string | null;
+    image?: string | null;
+}

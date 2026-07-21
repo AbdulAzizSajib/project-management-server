@@ -2,6 +2,7 @@ import status from "http-status";
 import { NotificationType } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
+import { emitNotification } from "../../socket/socket";
 
 interface CreateNotificationInput {
   userId: string;
@@ -16,8 +17,7 @@ interface CreateNotificationInput {
 // tai eta error throw korbe na — shudhu console e log korbe.
 const createNotification = async (input: CreateNotificationInput) => {
   try {
-    // Nijer action er jonno nijeke notify korar dorkar nei
-    return await prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: {
         userId: input.userId,
         title: input.title,
@@ -26,6 +26,12 @@ const createNotification = async (input: CreateNotificationInput) => {
         entityId: input.entityId,
       },
     });
+
+    // Real-time: user online thakle sathe sathe bell e dekhabe (reload lage na).
+    // Offline thakle DB te to ache-i — pore app khule GET /notifications e pabe.
+    emitNotification(input.userId, notification);
+
+    return notification;
   } catch (error) {
     console.error("Failed to create notification:", error);
     return null;
