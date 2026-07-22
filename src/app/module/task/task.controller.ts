@@ -151,6 +151,64 @@ const getTaskActivities = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const addAttachment = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (!req.file) {
+    return sendResponse(res, {
+      httpStatusCode: status.BAD_REQUEST,
+      success: false,
+      message: "No file uploaded",
+    });
+  }
+
+  const attachment = await TaskService.addAttachment(
+    id as string,
+    req.user.userId,
+    {
+      buffer: req.file.buffer,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+    },
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.CREATED,
+    success: true,
+    message: "Attachment uploaded successfully",
+    data: attachment,
+  });
+});
+
+const getTaskAttachments = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const attachments = await TaskService.getTaskAttachments(
+    id as string,
+    req.user.userId,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Attachments retrieved successfully",
+    data: attachments,
+  });
+});
+
+const deleteAttachment = catchAsync(async (req: Request, res: Response) => {
+  const { attachmentId } = req.params;
+
+  await TaskService.deleteAttachment(attachmentId as string, req.user.userId);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Attachment deleted successfully",
+  });
+});
+
 export const TaskController = {
   createTask,
   getProjectTasks,
@@ -160,4 +218,7 @@ export const TaskController = {
   updateTaskStatus,
   assignTask,
   getTaskActivities,
+  addAttachment,
+  getTaskAttachments,
+  deleteAttachment,
 };

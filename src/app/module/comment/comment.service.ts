@@ -5,6 +5,18 @@ import { prisma } from "../../lib/prisma";
 import { emitCommentNew } from "../../socket/socket";
 import { NotificationService } from "../notification/notification.service";
 
+// Comment content theke mention kora userId gulo ber kore ane।
+// Frontend "@[Name](userId)" format e mention insert kore.
+const parseMentionedUserIds = (content: string): string[] => {
+  const regex = /@\[[^\]]+\]\(([^)]+)\)/g;
+  const ids = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(content)) !== null) {
+    if (match[1]) ids.add(match[1]);
+  }
+  return [...ids];
+};
+
 // Task fetch kore ebong requester tar workspace er member kina check kore
 const getTaskWithAccess = async (taskId: string, userId: string) => {
   const task = await prisma.task.findUnique({
@@ -62,6 +74,37 @@ const createComment = async (
   // (save howar por — tai comment id/createdAt/user sob ready)
   emitCommentNew(taskId, comment);
 
+  // ---- @mention notification ----
+  // content e mention thakle sei user der alada "mentioned you" notification dei।
+  // shudhu jara ei workspace er member tader-i (leak/spam guard)।
+  const mentionedIds = parseMentionedUserIds(content).filter(
+    (id) => id !== userId, // nijeke mention korle notify kori na
+  );
+  const validMentionedIds = new Set<string>();
+
+  if (mentionedIds.length > 0) {
+    const workspaceMembers = await prisma.workspaceMember.findMany({
+      where: {
+        workspaceId: task.project.workspaceId,
+        userId: { in: mentionedIds },
+      },
+      select: { userId: true },
+    });
+    workspaceMembers.forEach((m) => validMentionedIds.add(m.userId));
+
+    await Promise.all(
+      [...validMentionedIds].map((mentionedId) =>
+        NotificationService.createNotification({
+          userId: mentionedId,
+          title: "You were mentioned",
+          message: `${comment.user.name} mentioned you in "${task.title}"`,
+          type: NotificationType.TASK_COMMENTED,
+          entityId: task.id,
+        }),
+      ),
+    );
+  }
+
   // ---- Conversation-centric notification ----
   // Age shudhu assignee ke notify hoto → tai B(assignee) reply korle A(creator)
   // kichu janto na. Ekhon ei task er sathe jorito SOBAI ke notify kori:
@@ -80,6 +123,9 @@ const createComment = async (
   if (task.creatorId) recipientIds.add(task.creatorId);
   pastCommenters.forEach((c) => recipientIds.add(c.userId));
   recipientIds.delete(userId); // nijer comment e nijeke notify kori na
+  // jara already "mentioned you" notification peyeche tader ke abar
+  // generic comment notification pathai na (double notify guard)
+  validMentionedIds.forEach((id) => recipientIds.delete(id));
 
   await Promise.all(
     [...recipientIds].map((recipientId) =>

@@ -1,6 +1,7 @@
 import http from "http";
 import app from "./app";
 import { envVars } from "./config/env";
+import { registerCronJobs } from "./cron";
 import { initSocket } from "./socket/socket";
 import { seedSuperAdmin } from "./utils/seed";
 
@@ -12,6 +13,9 @@ const bootstrap = async () => {
         // (app.listen sorasori korle io attach kora jeto na)
         const server = http.createServer(app);
         initSocket(server);
+
+        // Overdue task reminder cron chalu kori
+        registerCronJobs();
 
         server.listen(envVars.PORT, () => {
             console.log(`Server is running on http://localhost:${envVars.PORT}`);

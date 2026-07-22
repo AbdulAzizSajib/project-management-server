@@ -57,6 +57,27 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const deactivateAccount = catchAsync(async (req: Request, res: Response) => {
+    await AuthService.deactivateAccount(req.user);
+
+    // deactivate holo → session muche geche, tai cookie o clear kore dei
+    const cookieOptions = {
+        httpOnly: true,
+        secure: envVars.NODE_ENV === "production",
+        sameSite: envVars.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
+    };
+
+    CookieUtils.clearCookie(res, "accessToken", cookieOptions);
+    CookieUtils.clearCookie(res, "refreshToken", cookieOptions);
+    CookieUtils.clearCookie(res, "better-auth.session_token", cookieOptions);
+
+    sendResponse(res, {
+        httpStatusCode: status.OK,
+        success: true,
+        message: "Account deactivated successfully",
+    });
+});
+
 const getNewToken = catchAsync(async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
     const betterAuthSessionToken = req.cookies["better-auth.session_token"];
@@ -272,6 +293,7 @@ export const AuthController = {
     loginUser,
     getMe,
     updateProfile,
+    deactivateAccount,
     getNewToken,
     changePassword,
     logoutUser,

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Role } from "../../../generated/prisma/client";
+import { multerUpload } from "../../config/multer.config";
 import { checkAuth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validateRequest";
 import { TaskController } from "./task.controller";
@@ -66,6 +67,26 @@ TaskRouter.get(
   "/tasks/:id/activities",
   checkAuth(...ALL_ROLES),
   TaskController.getTaskActivities,
+);
+
+// ---- Attachments ----
+TaskRouter.post(
+  "/tasks/:id/attachments",
+  checkAuth(...ALL_ROLES),
+  multerUpload.single("file"),
+  TaskController.addAttachment,
+);
+
+TaskRouter.get(
+  "/tasks/:id/attachments",
+  checkAuth(...ALL_ROLES),
+  TaskController.getTaskAttachments,
+);
+
+TaskRouter.delete(
+  "/attachments/:attachmentId",
+  checkAuth(...ALL_ROLES),
+  TaskController.deleteAttachment,
 );
 
 export default TaskRouter;

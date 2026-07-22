@@ -48,6 +48,11 @@ router.post(
 );
 router.post("/logout", checkAuth(...ALL_ROLES), AuthController.logoutUser);
 router.post(
+    "/deactivate",
+    checkAuth(...ALL_ROLES),
+    AuthController.deactivateAccount,
+);
+router.post(
     "/verify-email",
     validateRequest(verifyEmailZodSchema),
     AuthController.verifyEmail,

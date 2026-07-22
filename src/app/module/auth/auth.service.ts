@@ -1,6 +1,6 @@
 import status from "http-status";
 import { JwtPayload } from "jsonwebtoken";
-import { Role } from "../../../generated/prisma/enums";
+import { Role, UserStatus } from "../../../generated/prisma/enums";
 import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
@@ -260,6 +260,40 @@ const logoutUser = async (sessionToken: string) => {
     return result;
 };
 
+// Logged-in user nijer account deactivate (soft-delete) kore।
+// User fields flag kore + shob session DB theke muche (sob device logout)।
+// checkAuth already isActive/isDeleted block kore, tai er por r kono
+// protected route e dhukte parbe na।
+const deactivateAccount = async (user: IRequestUser) => {
+    const existingUser = await prisma.user.findUnique({
+        where: { id: user.userId },
+    });
+
+    if (!existingUser) {
+        throw new AppError(status.NOT_FOUND, "User not found");
+    }
+
+    if (existingUser.isDeleted) {
+        throw new AppError(status.BAD_REQUEST, "Account is already deactivated");
+    }
+
+    await prisma.$transaction([
+        prisma.user.update({
+            where: { id: user.userId },
+            data: {
+                isActive: false,
+                isDeleted: true,
+                deletedAt: new Date(),
+                status: UserStatus.DELETED,
+            },
+        }),
+        // shob session muche di — sathe sathe sob jaygay logout hobe
+        prisma.session.deleteMany({ where: { userId: user.userId } }),
+    ]);
+
+    return null;
+};
+
 const verifyEmail = async (email: string, otp: string) => {
     const result = await auth.api.verifyEmailOTP({ body: { email, otp } });
 
@@ -403,6 +437,7 @@ export const AuthService = {
     loginUser,
     getMe,
     updateProfile,
+    deactivateAccount,
     getNewToken,
     changePassword,
     logoutUser,

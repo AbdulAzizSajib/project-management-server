@@ -18,13 +18,49 @@ model Task {
   creatorId String
   creator   User   @relation("TaskCreator", fields: [creatorId], references: [id])
 
-  comments   Comment[]
-  activities TaskActivity[]
+  comments    Comment[]
+  activities  TaskActivity[]
+  attachments Attachment[]
+  subtasks    Subtask[]
 
   @@index([projectId])
   @@index([assigneeId])
   @@index([creatorId])
   @@map("task")
+}
+
+model Subtask {
+  id          String   @id @default(cuid(2))
+  title       String
+  isCompleted Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("subtask")
+}
+
+model Attachment {
+  id        String   @id @default(cuid(2))
+  fileName  String
+  url       String   @db.Text
+  fileType  String?
+  fileSize  Int?
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  uploaderId String
+  uploader   User   @relation("AttachmentUploader", fields: [uploaderId], references: [id])
+
+  @@index([taskId])
+  @@index([uploaderId])
+  @@map("attachment")
 }
 
 model TaskActivity {

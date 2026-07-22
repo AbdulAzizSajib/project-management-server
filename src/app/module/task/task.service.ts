@@ -3,9 +3,14 @@ import {
   NotificationType,
   TaskStatus,
 } from "../../../generated/prisma/client";
+import {
+  deleteFileFromCloudinary,
+  uploadFileToCloudinary,
+} from "../../config/cloudinary.config";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { NotificationService } from "../notification/notification.service";
+import { sendTaskAssignedEmail } from "./task.email";
 import {
   CreateTaskPayload,
   TaskFilters,
@@ -265,7 +270,7 @@ const createTask = async (
   }
 
   // Task assign hole assignee ke notify kora (nijer kora task chara)
-  if (task.assigneeId && task.assigneeId !== requesterId) {
+  if (task.assigneeId && task.assigneeId !== requesterId && task.assignee) {
     await NotificationService.createNotification({
       userId: task.assigneeId,
       title: "New task assigned",
@@ -273,9 +278,38 @@ const createTask = async (
       type: NotificationType.TASK_ASSIGNED,
       entityId: task.id,
     });
+
+    await notifyAssigneeByEmail(task.id);
   }
 
   return task;
+};
+
+// Assignee ke email pathanor helper — assign howa 3 jaygay (create/update/assign)
+// theke call hoy. Ekhane task+project+assignee freshly fetch kore email pathai.
+// email fail hole (task.email nijei) throw kore na, tai mul flow safe.
+const notifyAssigneeByEmail = async (taskId: string) => {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: {
+      title: true,
+      dueDate: true,
+      project: { select: { id: true, name: true } },
+      assignee: { select: { name: true, email: true } },
+    },
+  });
+
+  if (!task?.assignee || !task.project) return;
+
+  await sendTaskAssignedEmail({
+    to: task.assignee.email,
+    recipientName: task.assignee.name,
+    taskTitle: task.title,
+    projectName: task.project.name,
+    projectId: task.project.id,
+    taskId,
+    dueDate: task.dueDate,
+  });
 };
 
 const getProjectTasks = async (
@@ -338,6 +372,14 @@ const getTaskById = async (taskId: string, requesterId: string) => {
         },
         orderBy: { createdAt: "desc" },
         take: 20,
+      },
+      attachments: {
+        include: {
+          uploader: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -433,6 +475,8 @@ const updateTask = async (
         type: NotificationType.TASK_ASSIGNED,
         entityId: updated.id,
       });
+
+      await notifyAssigneeByEmail(updated.id);
     }
   }
 
@@ -619,6 +663,8 @@ const assignTask = async (
       type: NotificationType.TASK_ASSIGNED,
       entityId: updated.id,
     });
+
+    await notifyAssigneeByEmail(updated.id);
   }
 
   return updated;
@@ -640,6 +686,98 @@ const getTaskActivities = async (taskId: string, requesterId: string) => {
   return activities;
 };
 
+// ---- ATTACHMENTS ----
+
+// File upload → Cloudinary → DB record. Requester workspace member hote hobe।
+const addAttachment = async (
+  taskId: string,
+  requesterId: string,
+  file: { buffer: Buffer; originalname: string; mimetype: string; size: number },
+) => {
+  await getTaskWithAccess(taskId, requesterId);
+
+  const uploaded = await uploadFileToCloudinary(file.buffer, file.originalname);
+
+  const attachment = await prisma.attachment.create({
+    data: {
+      taskId,
+      uploaderId: requesterId,
+      fileName: file.originalname,
+      url: uploaded.secure_url,
+      fileType: file.mimetype,
+      fileSize: file.size,
+    },
+    include: {
+      uploader: { select: { id: true, name: true, image: true } },
+    },
+  });
+
+  await logActivity({
+    taskId,
+    userId: requesterId,
+    action: "ATTACHMENT_ADDED",
+    newValue: file.originalname,
+  });
+
+  return attachment;
+};
+
+const getTaskAttachments = async (taskId: string, requesterId: string) => {
+  await getTaskWithAccess(taskId, requesterId);
+
+  const attachments = await prisma.attachment.findMany({
+    where: { taskId },
+    include: {
+      uploader: { select: { id: true, name: true, image: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return attachments;
+};
+
+// Delete: uploader nijei, ba task approver (owner/admin/lead) korte parbe।
+const deleteAttachment = async (attachmentId: string, requesterId: string) => {
+  const attachment = await prisma.attachment.findUnique({
+    where: { id: attachmentId },
+    include: { task: { select: { id: true, projectId: true } } },
+  });
+
+  if (!attachment) {
+    throw new AppError(status.NOT_FOUND, "Attachment not found");
+  }
+
+  // workspace member kina + access check (task diye)
+  await getTaskWithAccess(attachment.taskId, requesterId);
+
+  const isUploader = attachment.uploaderId === requesterId;
+  const isApprover = await isTaskApprover(
+    attachment.task.projectId,
+    requesterId,
+  );
+
+  if (!isUploader && !isApprover) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Only the uploader or a project lead can delete this attachment",
+    );
+  }
+
+  // best-effort Cloudinary cleanup (fail korleও DB record delete hobe)
+  await deleteFileFromCloudinary(attachment.url);
+
+  await prisma.attachment.delete({ where: { id: attachmentId } });
+
+  await logActivity({
+    taskId: attachment.taskId,
+    userId: requesterId,
+    action: "ATTACHMENT_REMOVED",
+    oldValue: attachment.fileName,
+  });
+
+  return null;
+};
+
 export const TaskService = {
   createTask,
   getProjectTasks,
@@ -649,4 +787,7 @@ export const TaskService = {
   updateTaskStatus,
   assignTask,
   getTaskActivities,
+  addAttachment,
+  getTaskAttachments,
+  deleteAttachment,
 };

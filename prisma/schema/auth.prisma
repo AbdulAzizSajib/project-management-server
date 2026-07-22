@@ -18,16 +18,17 @@ model User {
   accounts           Account[]
 
   // Project-management relations
-  ownedWorkspaces   Workspace[]       @relation("WorkspaceOwner")
-  workspaceMembers  WorkspaceMember[]
-  sentInvitations   Invitation[]      @relation("InvitationInviter")
-  ledProjects       Project[]         @relation("ProjectTeamLead")
-  projectMembers    ProjectMember[]
-  assignedTasks     Task[]            @relation("TaskAssignee")
-  createdTasks      Task[]            @relation("TaskCreator")
-  comments          Comment[]
-  notifications     Notification[]
-  taskActivities    TaskActivity[]
+  ownedWorkspaces  Workspace[]       @relation("WorkspaceOwner")
+  workspaceMembers WorkspaceMember[]
+  sentInvitations  Invitation[]      @relation("InvitationInviter")
+  ledProjects      Project[]         @relation("ProjectTeamLead")
+  projectMembers   ProjectMember[]
+  assignedTasks    Task[]            @relation("TaskAssignee")
+  createdTasks     Task[]            @relation("TaskCreator")
+  comments         Comment[]
+  notifications    Notification[]
+  taskActivities   TaskActivity[]
+  attachments      Attachment[]      @relation("AttachmentUploader")
 
   @@index([role])
   @@map("user")

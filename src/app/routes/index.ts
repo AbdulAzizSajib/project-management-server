@@ -8,6 +8,8 @@ import TaskRouter from "../module/task/task.route";
 import CommentRouter from "../module/comment/comment.route";
 import DashboardRouter from "../module/dashboard/dashboard.route";
 import NotificationRouter from "../module/notification/notification.route";
+import SearchRouter from "../module/search/search.route";
+import SubtaskRouter from "../module/subtask/subtask.route";
 
 const router = Router();
 
@@ -16,9 +18,11 @@ router.use("/workspaces", WorkspaceRouter);
 router.use("/workspaces", workspaceMemberRoute);
 router.use("/projects", ProjectRouter);
 router.use("/", TaskRouter);
+router.use("/", SubtaskRouter);
 router.use("/", CommentRouter);
 router.use("/", DashboardRouter);
 router.use("/notifications", NotificationRouter);
+router.use("/search", SearchRouter);
 router.use("/", InvitationRouter);
 
 export const IndexRoutes = router;
