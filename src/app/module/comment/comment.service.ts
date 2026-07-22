@@ -8,7 +8,9 @@ import { NotificationService } from "../notification/notification.service";
 // Comment content theke mention kora userId gulo ber kore ane।
 // Frontend "@[Name](userId)" format e mention insert kore.
 const parseMentionedUserIds = (content: string): string[] => {
-  const regex = /@\[[^\]]+\]\(([^)]+)\)/g;
+  // "@" prefix optional — insert bug er karone kichu comment "@" chara
+  // "[name](id)" hote pare, tader theke o userId ber kori।
+  const regex = /@?\[[^\]]+\]\(([^)]+)\)/g;
   const ids = new Set<string>();
   let match: RegExpExecArray | null;
   while ((match = regex.exec(content)) !== null) {
